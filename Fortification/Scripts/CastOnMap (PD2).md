@@ -12,7 +12,7 @@
 ```asm
 { 
   Game   : Diablo II
-  Version: 1.14d (Project Diablo 2)
+  Version: 1.13c (Project Diablo 2)
   Date   : 2025-07-25
   Author : Fortification Team
 
@@ -26,9 +26,9 @@
 
 [ENABLE]
 
-// Memory addresses and functions
-define(GameReady,60000000)              // GameReady function
-define(D2NET_SendPacket,60000004)       // Network packet function
+// Memory addresses and functions from D2Ptrs.h
+define(D2CLIENT_GetPlayerUnit,0xA4D60)  // FUNCPTR(D2CLIENT, GetPlayerUnit, UnitAny* __stdcall,(),0xA4D60)
+define(D2NET_SendPacket,-10024)         // FUNCPTR(D2NET, SendPacket, void __stdcall, (DWORD aLen, DWORD arg1, BYTE* aPacket), -10024)
 define(GetTickCount,kernel32.GetTickCount) // Timer function
 define(v_LastPrecast,50000000)          // Last precast timestamp
 define(COOLDOWN_TIME,500)               // 500ms cooldown
@@ -55,8 +55,8 @@ CastOnMapRoutine:
   mov cx,[ebp+12]                       // y coordinate
   mov dl,[ebp+16]                       // Left flag
   
-  // Check if game is ready
-  call GameReady
+  // Check if game is ready (using D2CLIENT_GetPlayerUnit)
+  call D2CLIENT_GetPlayerUnit
   test eax,eax
   jz CastOnMapFailed                    // Return 0 if game not ready
   

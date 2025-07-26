@@ -12,7 +12,7 @@
 ```asm
 { 
   Game   : Diablo II
-  Version: 1.14d (Project Diablo 2)
+  Version: 1.13c (Project Diablo 2)
   Date   : 2025-07-25
   Author : Fortification Team
 
@@ -26,10 +26,10 @@
 
 [ENABLE]
 
-// Memory addresses and constants
-define(pMe,40000000)                    // Player unit pointer
-define(GetItemLocation,60000000)        // GetItemLocation function
-define(GetUnitStat,60000004)            // GetUnitStat function
+// Memory addresses and constants from D2Ptrs.h
+define(pMe,0x11BBFC)                    // VARPTR(D2CLIENT, PlayerUnit, UnitAny *, 0x11BBFC)
+define(GetItemLocation,CUSTOM_FUNCTION) // Custom function using item data analysis
+define(D2COMMON_GetUnitStat,-10973)     // FUNCPTR(D2COMMON, GetUnitStat, DWORD __stdcall, (UnitAny* pUnit, DWORD dwStat, DWORD dwStat2), -10973)
 define(UNIT_TYPE_ITEM,4)                // Item unit type constant
 define(STAT_AMMOQUANTITY,70)            // Ammunition quantity stat
 define(STORAGE_STASH,1)                 // Storage location constants
@@ -91,10 +91,11 @@ FindItemLoop:
   jne CheckItemLocation                 // Skip special check if not TP tome
   
   // Check ammunition quantity for TP tome
+  push 0                                // dwStat2 parameter (0 for base stat)
   push STAT_AMMOQUANTITY                // Stat ID
   push esi                              // Item unit
-  call GetUnitStat                      // Get ammo quantity
-  add esp,8                             // Clean stack
+  call D2COMMON_GetUnitStat             // Get ammo quantity
+  add esp,12                            // Clean stack (3 parameters)
   test eax,eax                          // Check if quantity is 0
   jz FindItemNext                       // Skip if empty tome
   

@@ -12,7 +12,7 @@
 ```asm
 { 
   Game   : Diablo II
-  Version: 1.14d (Project Diablo 2)
+  Version: 1.13c (Project Diablo 2)
   Date   : 2025-07-25
   Author : Fortification Team
 
@@ -27,18 +27,18 @@
 
 [ENABLE]
 
-// Memory addresses (these would need to be updated for actual PD2 offsets)
-define(pMe,40000000)                    // Player unit pointer
+// Memory addresses from D2Ptrs.h
+define(pMe,0x11BBFC)                    // VARPTR(D2CLIENT, PlayerUnit, UnitAny *, 0x11BBFC)
 define(GetTickCount,kernel32.GetTickCount)
 define(v_LastLife,50000000)             // Last health potion use timestamp
 define(v_AutoLifePercent,50000004)      // Life percentage threshold (default 30)
 
-// Function pointers (would need actual PD2 addresses)
-define(GameReady,60000000)              // GameReady function
-define(GetUnitStat,60000004)            // GetUnitStat function  
-define(GetUnitState,60000008)           // GetUnitState function
-define(Health,6000000C)                 // Health potion use function
-define(CalcPercent,60000010)            // Percentage calculation function
+// Function pointers from D2Ptrs.h
+define(D2CLIENT_GetPlayerUnit,0xA4D60)  // FUNCPTR(D2CLIENT, GetPlayerUnit, UnitAny* __stdcall,(),0xA4D60)
+define(D2COMMON_GetUnitStat,-10973)     // FUNCPTR(D2COMMON, GetUnitStat, DWORD __stdcall, (UnitAny* pUnit, DWORD dwStat, DWORD dwStat2), -10973)
+define(D2COMMON_GetUnitState,-10494)    // FUNCPTR(D2COMMON, GetUnitState, INT __stdcall, (LPUNITANY Unit, DWORD State), -10494)
+define(Health,CUSTOM_FUNCTION)          // Custom function using FindItem + UseItem + D2NET_SendPacket
+define(CalcPercent,CUSTOM_FUNCTION)     // Custom percentage calculation function
 
 // Constants
 define(STAT_HP,6)                       // Current HP stat ID
@@ -62,27 +62,29 @@ AutoLifeRoutine:
   push ebp
   mov ebp,esp
   
-  // Check if game is ready
-  call GameReady
+  // Check if game is ready (using D2CLIENT_GetPlayerUnit)
+  call D2CLIENT_GetPlayerUnit
   test eax,eax
   jz AutoLifeExit                       // Exit if game not ready
   
   // Calculate current life percentage
-  // LifePercent = CalcPercent((GetUnitStat(pMe, STAT_HP) >> 8), (GetUnitStat(pMe, STAT_MAXHP) >> 8))
+  // LifePercent = CalcPercent((D2COMMON_GetUnitStat(pMe, STAT_HP) >> 8), (D2COMMON_GetUnitStat(pMe, STAT_MAXHP) >> 8))
   
   // Get current HP
+  push 0                                // dwStat2 parameter (0 for base stat)
   push STAT_HP                          // stat ID
   push [pMe]                            // player unit
-  call GetUnitStat
-  add esp,8                             // Clean stack
+  call D2COMMON_GetUnitStat
+  add esp,12                            // Clean stack (3 parameters)
   shr eax,8                             // Shift right by 8 bits
   push eax                              // Save current HP
   
   // Get max HP  
+  push 0                                // dwStat2 parameter (0 for base stat)
   push STAT_MAXHP                       // stat ID
   push [pMe]                            // player unit
-  call GetUnitStat
-  add esp,8                             // Clean stack
+  call D2COMMON_GetUnitStat
+  add esp,12                            // Clean stack (3 parameters)
   shr eax,8                             // Shift right by 8 bits
   mov edx,eax                           // max HP in edx
   pop eax                               // current HP in eax
@@ -105,7 +107,7 @@ AutoLifeRoutine:
   // Check if health potion effect is active
   push AFFECT_HEALTHPOT                 // Health potion effect ID
   push [pMe]                            // Player unit
-  call GetUnitState
+  call D2COMMON_GetUnitState
   add esp,8                             // Clean stack
   test eax,eax
   jnz AutoLifeExit                      // Exit if health potion effect active
@@ -142,9 +144,9 @@ gameLoopHook:
 unregistersymbol(pMe)
 unregistersymbol(v_LastLife)
 unregistersymbol(v_AutoLifePercent)
-unregistersymbol(GameReady)
-unregistersymbol(GetUnitStat)
-unregistersymbol(GetUnitState)
+unregistersymbol(D2CLIENT_GetPlayerUnit)
+unregistersymbol(D2COMMON_GetUnitStat)
+unregistersymbol(D2COMMON_GetUnitState)
 unregistersymbol(Health)
 unregistersymbol(CalcPercent)
 ```

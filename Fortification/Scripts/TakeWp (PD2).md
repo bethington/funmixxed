@@ -12,7 +12,7 @@
 ```asm
 { 
   Game   : Diablo II
-  Version: 1.14d (Project Diablo 2)
+  Version: 1.13c (Project Diablo 2)
   Date   : 2025-07-25
   Author : Fortification Team
 

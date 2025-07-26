@@ -12,7 +12,7 @@
 ```asm
 { 
   Game   : Diablo II
-  Version: 1.14d
+  Version: 1.13c
   Date   : 2025-07-24
   Author : Xerzes
 

@@ -12,7 +12,7 @@
 ```asm
 { 
   Game   : Diablo II
-  Version: 1.14d (Project Diablo 2)
+  Version: 1.13c (Project Diablo 2)
   Date   : 2025-07-25
   Author : Fortification Team
 
@@ -26,9 +26,9 @@
 
 [ENABLE]
 
-// Memory addresses and function pointers
-define(GameReady,60000000)              // GameReady function
-define(D2CLIENT_PrintGameString,60000004) // Print function
+// Memory addresses and function pointers from D2Ptrs.h
+define(D2CLIENT_GetPlayerUnit,0xA4D60)  // FUNCPTR(D2CLIENT, GetPlayerUnit, UnitAny* __stdcall,(),0xA4D60)
+define(D2CLIENT_PrintGameString,0x7D850) // FUNCPTR(D2CLIENT, PrintGameString, void __stdcall, (wchar_t *wMessage, int nColor), 0x7D850)
 define(vsprintf_s,msvcrt.vsprintf_s)    // Format function
 define(MultiByteToWideChar,kernel32.MultiByteToWideChar) // Convert function
 

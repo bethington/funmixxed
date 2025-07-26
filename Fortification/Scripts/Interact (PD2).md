@@ -12,7 +12,7 @@
 ```asm
 { 
   Game   : Diablo II
-  Version: 1.14d (Project Diablo 2)
+  Version: 1.13c (Project Diablo 2)
   Date   : 2025-07-25
   Author : Fortification Team
 
@@ -26,9 +26,9 @@
 
 [ENABLE]
 
-// Memory addresses and functions
-define(GameReady,60000000)              // GameReady function
-define(D2NET_SendPacket,60000004)       // Network packet function
+// Memory addresses and functions from D2Ptrs.h
+define(D2CLIENT_GetPlayerUnit,0xA4D60)  // FUNCPTR(D2CLIENT, GetPlayerUnit, UnitAny* __stdcall,(),0xA4D60)
+define(D2NET_SendPacket,-10024)         // FUNCPTR(D2NET, SendPacket, void __stdcall, (DWORD aLen, DWORD arg1, BYTE* aPacket), -10024)
 
 // Hook for unit interaction
 aobscanmodule(interactHook,D2CLIENT.dll,6A ?? 68 ?? ?? ?? ?? E8)

@@ -12,7 +12,7 @@
 ```asm
 { 
   Game   : Diablo II
-  Version: 1.14d (Project Diablo 2)
+  Version: 1.13c (Project Diablo 2)
   Date   : 2025-07-25
   Author : Fortification Team
 
@@ -26,11 +26,11 @@
 
 [ENABLE]
 
-// Memory addresses and functions
-define(pMe,40000000)                    // Player unit pointer
-define(FindItem,60000000)               // FindItem function
-define(UseItem,60000004)                // UseItem function
-define(GetUnitStat,60000008)            // GetUnitStat function
+// Memory addresses and functions from D2Ptrs.h
+define(pMe,0x11BBFC)                    // VARPTR(D2CLIENT, PlayerUnit, UnitAny *, 0x11BBFC)
+define(FindItem,CUSTOM_FUNCTION)        // Custom function using inventory traversal
+define(UseItem,CUSTOM_FUNCTION)         // Custom function using D2NET_SendPacket
+define(D2COMMON_GetUnitStat,-10973)     // FUNCPTR(D2COMMON, GetUnitStat, DWORD __stdcall, (UnitAny* pUnit, DWORD dwStat, DWORD dwStat2), -10973)
 define(STORAGE_STASH,1)                 // Storage location constants
 define(STORAGE_BELT,2)
 define(STORAGE_INVENTORY,3)

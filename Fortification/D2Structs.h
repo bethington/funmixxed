@@ -190,7 +190,7 @@ struct RoomTile {
 	RoomTile* pNext;				//0x04
 	DWORD _1[2];					//0x08
 	DWORD *nNum;					//0x10
-};//updated 1.13c
+};
 
 struct RosterUnit {
 	char szName[16];				//0x00
@@ -708,10 +708,10 @@ struct Skill_t {
 /*
 Akara NPCEntry
 
-0   94 00 00 00 03 00 00 00  î.......
+0   94 00 00 00 03 00 00 00  ÔøΩ.......
 8   35 0D 44 0D 00 00 00 00  5.D.....
-10  00 00 B0 AA B0 6F 90 BD  ..∞™∞oêΩ
-18  B0 6F 00 00 00 00 00 00  ∞o......
+10  00 00 B0 AA B0 6F 90 BD  ..ÔøΩÔøΩÔøΩoÔøΩÔøΩ
+18  B0 6F 00 00 00 00 00 00  ÔøΩo......
 20  00 00 00 00 00 00 01     .......
 */
 // Thanks to Darawk for hooking me up with this preprocessor commands!

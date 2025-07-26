@@ -12,7 +12,7 @@
 ```asm
 { 
   Game   : Diablo II
-  Version: 1.14d (Project Diablo 2)
+  Version: 1.13c (Project Diablo 2)
   Date   : 2025-07-25
   Author : Fortification Team
 
@@ -26,13 +26,13 @@
 
 [ENABLE]
 
-// Memory addresses and functions
-define(pMe,40000000)                    // Player unit pointer
-define(GameReady,60000000)              // GameReady function
-define(GetUnitStat,60000004)            // GetUnitStat function
-define(GetUnitState,60000008)           // GetUnitState function
-define(CalcPercent,6000000C)            // CalcPercent function
-define(Mana,60000010)                   // Mana function
+// Memory addresses and functions from D2Ptrs.h
+define(pMe,0x11BBFC)                    // VARPTR(D2CLIENT, PlayerUnit, UnitAny *, 0x11BBFC)
+define(D2CLIENT_GetPlayerUnit,0xA4D60)  // FUNCPTR(D2CLIENT, GetPlayerUnit, UnitAny* __stdcall,(),0xA4D60)
+define(D2COMMON_GetUnitStat,-10973)     // FUNCPTR(D2COMMON, GetUnitStat, DWORD __stdcall, (UnitAny* pUnit, DWORD dwStat, DWORD dwStat2), -10973)
+define(D2COMMON_GetUnitState,-10494)    // FUNCPTR(D2COMMON, GetUnitState, INT __stdcall, (LPUNITANY Unit, DWORD State), -10494)
+define(CalcPercent,CUSTOM_FUNCTION)     // Custom percentage calculation function
+define(Mana,CUSTOM_FUNCTION)            // Custom mana function using FindItem + UseItem
 define(GetTickCount,kernel32.GetTickCount) // Timer function
 define(v_LastMana,50000000)             // Last mana use timestamp
 define(v_AutoManaPercent,50000004)      // Mana percentage threshold
@@ -59,25 +59,27 @@ AutoManaRoutine:
   push edx
   push esi
   
-  // Check if game is ready
-  call GameReady
+  // Check if game is ready (using D2CLIENT_GetPlayerUnit)
+  call D2CLIENT_GetPlayerUnit
   test eax,eax
   jz AutoManaExit                       // Exit if game not ready
   
   // Calculate current mana percentage
   // Get current mana (STAT_MANA >> 8)
+  push 0                                // dwStat2 parameter (0 for base stat)
   push STAT_MANA                        // Mana stat ID
   push [pMe]                            // Player unit
-  call GetUnitStat                      // Get current mana
-  add esp,8                             // Clean stack
+  call D2COMMON_GetUnitStat             // Get current mana
+  add esp,12                            // Clean stack (3 parameters)
   shr eax,8                             // Shift right by 8 bits
   push eax                              // Save current mana
   
   // Get max mana (STAT_MAXMANA >> 8)
+  push 0                                // dwStat2 parameter (0 for base stat)
   push STAT_MAXMANA                     // Max mana stat ID
   push [pMe]                            // Player unit
-  call GetUnitStat                      // Get max mana
-  add esp,8                             // Clean stack
+  call D2COMMON_GetUnitStat             // Get max mana
+  add esp,12                            // Clean stack (3 parameters)
   shr eax,8                             // Shift right by 8 bits
   mov edx,eax                           // Max mana in edx
   pop eax                               // Current mana in eax
@@ -99,7 +101,7 @@ AutoManaRoutine:
   // Check if mana potion effect is active
   push AFFECT_MANAPOT                   // Mana potion effect ID
   push [pMe]                            // Player unit
-  call GetUnitState                     // Check for mana potion effect
+  call D2COMMON_GetUnitState            // Check for mana potion effect
   add esp,8                             // Clean stack
   test eax,eax
   jnz AutoManaExit                      // Exit if mana potion effect active

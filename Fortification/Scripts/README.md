@@ -118,7 +118,7 @@ Recommended implementation order:
 ## Compatibility
 
 All scripts are designed for:
-- **Game**: Diablo II Version 1.14d
+- **Game**: Diablo II Version 1.13c
 - **Mod**: Project Diablo 2
 - **Tool**: Cheat Engine Auto Assembler
 - **Architecture**: x86 (32-bit)

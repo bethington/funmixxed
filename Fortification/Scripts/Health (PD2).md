@@ -12,7 +12,7 @@
 ```asm
 { 
   Game   : Diablo II
-  Version: 1.14d (Project Diablo 2)
+  Version: 1.13c (Project Diablo 2)
   Date   : 2025-07-25
   Author : Fortification Team
 
@@ -26,12 +26,12 @@
 
 [ENABLE]
 
-// Memory addresses and functions
-define(pMe,40000000)                    // Player unit pointer
-define(GameReady,60000000)              // GameReady function
-define(InTown,60000004)                 // InTown function
-define(FindItem,60000008)               // FindItem function
-define(UseItem,6000000C)                // UseItem function
+// Memory addresses and functions from D2Ptrs.h
+define(pMe,0x11BBFC)                    // VARPTR(D2CLIENT, PlayerUnit, UnitAny *, 0x11BBFC)
+define(D2CLIENT_GetPlayerUnit,0xA4D60)  // FUNCPTR(D2CLIENT, GetPlayerUnit, UnitAny* __stdcall,(),0xA4D60)
+define(D2CLIENT_PlayerArea,0x11C34C)    // VARPTR(D2CLIENT, PlayerArea, int, 0x11C34C) - for town checking
+define(FindItem,CUSTOM_FUNCTION)        // Custom function using inventory traversal
+define(UseItem,CUSTOM_FUNCTION)         // Custom function using D2NET_SendPacket
 define(STORAGE_STASH,1)                 // Storage location constants
 define(STORAGE_BELT,2)
 define(STORAGE_INVENTORY,3)
@@ -61,21 +61,27 @@ HealthRoutine:
   push esi
   push edi
   
-  // Check if game is ready
-  call GameReady
+  // Check if game is ready (using D2CLIENT_GetPlayerUnit)
+  call D2CLIENT_GetPlayerUnit
   test eax,eax
   jz HealthFailed                       // Exit if game not ready
   
-  // Check if player is in town
-  mov eax,[pMe]
+  // Check if player is in town (using D2CLIENT_PlayerArea)
+  mov eax,[D2CLIENT_PlayerArea]         // Get current area ID
   test eax,eax
-  jz HealthFailed                       // Exit if no player
+  jz HealthFailed                       // Exit if no area info
   
-  push eax                              // Player unit
-  call InTown                           // Check if in town
-  add esp,4                             // Clean stack
-  test eax,eax
-  jnz HealthFailed                      // Exit if in town
+  // Check for town area IDs (1, 40, 75, 103, 109 are common town IDs)
+  cmp eax,1                             // Rogue Encampment
+  je HealthFailed
+  cmp eax,40                            // Lut Gholein  
+  je HealthFailed
+  cmp eax,75                            // Kurast Docks
+  je HealthFailed
+  cmp eax,103                           // Pandemonium Fortress
+  je HealthFailed
+  cmp eax,109                           // Harrogath
+  je HealthFailed
   
   // Check if cursor item exists
   mov eax,[pMe]

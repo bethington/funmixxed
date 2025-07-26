@@ -12,7 +12,7 @@
 ```asm
 { 
   Game   : Diablo II
-  Version: 1.14d (Project Diablo 2)
+  Version: 1.13c (Project Diablo 2)
   Date   : 2025-07-25
   Author : Fortification Team
 
@@ -26,12 +26,12 @@
 
 [ENABLE]
 
-// Memory addresses and pointers
-define(pMe,40000000)                    // Player unit pointer
-define(D2CLIENT_GetPlayerUnit,60000000) // Get player function
-define(p_D2WIN_FirstControl,60000004)   // UI control pointer
-define(GetPlayerArea,60000008)          // Player area function
-define(VALIDPTR,6000000C)               // Pointer validation macro
+// Memory addresses and pointers from D2Ptrs.h
+define(pMe,0x11BBFC)                    // VARPTR(D2CLIENT, PlayerUnit, UnitAny *, 0x11BBFC)
+define(D2CLIENT_GetPlayerUnit,0xA4D60)  // FUNCPTR(D2CLIENT, GetPlayerUnit, UnitAny* __stdcall,(),0xA4D60)
+define(p_D2WIN_FirstControl,0x214A0)    // VARPTR(D2WIN, FirstControl, Control*, 0x214A0)
+define(D2CLIENT_PlayerArea,0x11C34C)    // VARPTR(D2CLIENT, PlayerArea, int, 0x11C34C)
+define(VALIDPTR,CUSTOM_FUNCTION)        // Custom pointer validation function
 
 // Hook for game state checking
 aobscanmodule(gameStateHook,D2CLIENT.dll,85 C0 74 ?? 8B ?? ?? ?? ?? ??85)
@@ -151,8 +151,8 @@ CheckAct:
   jz GameNotReady                       // Return FALSE if invalid
   
 CheckPlayerArea:
-  // Check GetPlayerArea() != NULL
-  call GetPlayerArea
+  // Check D2CLIENT_PlayerArea != 0
+  mov eax,[D2CLIENT_PlayerArea]         // Get current area
   test eax,eax
   jz GameNotReady                       // Return FALSE if no area
   
